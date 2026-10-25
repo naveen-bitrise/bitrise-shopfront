@@ -1,0 +1,160 @@
+format_version: "13"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: react-native
+
+# Shopfront CI for the self-healing release eval.
+#   pr                 -> typecheck + unit tests on every PR to main (LLM risk review step added later)
+#   ios_simulator      -> release-config simulator build pointing at the Staging CodePush deployment
+#   android_emulator   -> release APK for emulators, same deployment
+#   codepush_staging   -> on push to main: bundle JS and upload a CodePush update to Staging (iOS + Android)
+#
+# Secrets (Bitrise > App settings > Secrets):
+#   BITRISE_API_TOKEN, IOS_CODEPUSH_DEPLOYMENT_KEY, ANDROID_CODEPUSH_DEPLOYMENT_KEY
+# Env vars below (fill after creating connected apps + deployments):
+#   IOS_CONNECTED_APP_ID, IOS_STAGING_DEPLOYMENT_ID, ANDROID_CONNECTED_APP_ID, ANDROID_STAGING_DEPLOYMENT_ID
+
+app:
+  envs:
+  - IOS_CONNECTED_APP_ID: REPLACE_ME
+  - IOS_STAGING_DEPLOYMENT_ID: REPLACE_ME
+  - ANDROID_CONNECTED_APP_ID: REPLACE_ME
+  - ANDROID_STAGING_DEPLOYMENT_ID: REPLACE_ME
+
+meta:
+  bitrise.io:
+    stack: osx-xcode-16.4.x
+    machine_type_id: g2.mac.medium
+
+step_bundles:
+  install:
+    steps:
+    - git-clone@8: {}
+    - restore-npm-cache@2: {}
+    - script@1:
+        title: npm ci
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            npm ci
+    - save-npm-cache@1: {}
+
+workflows:
+  pr:
+    meta:
+      bitrise.io:
+        stack: ubuntu-noble-24.04-bitrise-2025-android
+        machine_type_id: g2.linux.medium
+    steps:
+    - bundle::install: {}
+    - script@1:
+        title: Typecheck and unit tests
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            npm run ci
+    triggers:
+      pull_request:
+      - target_branch: main
+
+  ios_simulator:
+    steps:
+    - bundle::install: {}
+    - script@1:
+        title: Expo prebuild (iOS)
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            npx expo prebuild --platform ios --no-install
+    - restore-cocoapods-cache@2: {}
+    - cocoapods-install@2:
+        inputs:
+        - source_root_path: ios
+    - save-cocoapods-cache@1: {}
+    - xcode-build-for-simulator@3:
+        inputs:
+        - project_path: ios/Shopfront.xcworkspace
+        - scheme: Shopfront
+        - configuration: Release
+        - xcodebuild_options: |-
+            CODE_SIGN_IDENTITY=""
+            CODE_SIGNING_REQUIRED=NO
+            CODE_SIGNING_ALLOWED=NO
+    - deploy-to-bitrise-io@2: {}
+
+  android_emulator:
+    meta:
+      bitrise.io:
+        stack: ubuntu-noble-24.04-bitrise-2025-android
+        machine_type_id: g2.linux.large
+    steps:
+    - bundle::install: {}
+    - script@1:
+        title: Expo prebuild (Android)
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            npx expo prebuild --platform android --no-install
+    - android-build@1:
+        inputs:
+        - project_location: $BITRISE_SOURCE_DIR/android
+        - module: app
+        - variant: release
+    - deploy-to-bitrise-io@2: {}
+
+  codepush_staging:
+    meta:
+      bitrise.io:
+        stack: ubuntu-noble-24.04-bitrise-2025-android
+        machine_type_id: g2.linux.medium
+    steps:
+    - bundle::install: {}
+    - script@1:
+        title: Read binary version and fetch Release Management recipes
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            APP_VERSION=$(npx expo config --json 2>/dev/null | jq -r '.version')
+            echo "Binary version: $APP_VERSION"
+            envman add --key APP_VERSION --value "$APP_VERSION"
+            git clone --depth 1 https://github.com/bitrise-io/release-management-recipes
+    - script@1:
+        title: Bundle and upload CodePush updates to Staging
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+
+            upload() {
+              local platform=$1 bundle=$2 connected_app=$3 deployment=$4
+              rm -rf build update.zip
+              npx expo export:embed --entry-file index.js --platform "$platform" --dev false \
+                --reset-cache --bundle-output "./build/$bundle" --assets-dest ./build \
+                --sourcemap-output "./build/$bundle.map"
+              # keep the source map as a build artifact (uploaded to Sentry later)
+              cp "./build/$bundle.map" "$BITRISE_DEPLOY_DIR/$platform-$bundle.map"
+              rm "./build/$bundle.map"
+              zip -qr update.zip ./build
+              local response
+              response=$(cd release-management-recipes && PACKAGE_PATH=../update.zip \
+                AUTHORIZATION_TOKEN=$BITRISE_API_TOKEN CONNECTED_APP_ID=$connected_app \
+                DEPLOYMENT_ID=$deployment APP_VERSION=$APP_VERSION \
+                /bin/bash ./api/upload_code_push_package.sh 2>&1)
+              local status
+              status=$(echo "$response" | tail -n1 | jq -r '.status' || echo null)
+              if [ "$status" != "processed_valid" ]; then
+                echo "$response"; echo "CodePush upload failed for $platform (status: $status)"; exit 1
+              fi
+              echo "CodePush update uploaded for $platform"
+            }
+
+            upload ios main.jsbundle "$IOS_CONNECTED_APP_ID" "$IOS_STAGING_DEPLOYMENT_ID"
+            upload android index.android.bundle "$ANDROID_CONNECTED_APP_ID" "$ANDROID_STAGING_DEPLOYMENT_ID"
+    - deploy-to-bitrise-io@2: {}
+    triggers:
+      push:
+      - branch: main

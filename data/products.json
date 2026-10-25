@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "products": [
+    {
+      "id": "p-01",
+      "name": "Cordless Drill 18V",
+      "brand": "Voltix",
+      "category": "Tools",
+      "price": 129.0,
+      "rating": 4.6,
+      "image": "https://picsum.photos/seed/shopfront-p-01/600/600",
+      "description": "Compact brushless drill with 2-speed gearbox and LED work light.",
+      "variants": [
+        {
+          "id": "p-01-v1",
+          "label": "Body only",
+          "available": true
+        },
+        {
+          "id": "p-01-v2",
+          "label": "2x 2Ah battery kit",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "p-02",
+      "name": "Claw Hammer 450g",
+      "brand": "Forgeline",
+      "category": "Tools",
+      "price": 24.5,
+      "rating": 4.4,
+      "image": "https://picsum.photos/seed/shopfront-p-02/600/600",
+      "description": "Fibreglass handle with anti-vibration grip.",
+      "variants": [
+        {
+          "id": "p-02-v1",
+          "label": "450g",
+          "available": true
+        },
+        {
+          "id": "p-02-v2",
+          "label": "570g",
+          "available": false
+        }
+      ]
+    },
+    {
+      "id": "p-03",
+      "name": "Socket Set 46-piece",
+      "brand": "Forgeline",
+      "category": "Tools",
+      "price": 59.99,
+      "rating": 4.7,
+      "image": "https://picsum.photos/seed/shopfront-p-03/600/600",
+      "description": "Chrome vanadium sockets in a carry case.",
+      "variants": [
+        {
+          "id": "p-03-v1",
+          "label": "Metric",
+          "available": true
+        },
+        {
+          "id": "p-03-v2",
+          "label": "Imperial",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "p-04",
+      "name": "Garden Hose 20m",
+      "brand": "GreenReel",
+      "category": "Garden",
+      "price": 39.0,
+      "rating": 4.2,
+      "image": "https://picsum.photos/seed/shopfront-p-04/600/600",
+      "description": "Kink-resistant hose with 7-pattern spray gun.",
+      "variants": [
+        {
+          "id": "p-04-v1",
+          "label": "20m",
+          "available": true
+        },
+        {
+          "id": "p-04-v2",
+          "label": "30m",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "p-05",
+      "name": "Raised Garden Bed",
+      "brand": "GreenReel",
+      "category": "Garden",
+      "price": 89.0,
+      "rating": 4.5,
+      "image": "https://picsum.photos/seed/shopfront-p-05/600/600",
+      "description": "Galvanised steel bed, 120 x 60 x 40 cm.",
+      "variants": [
+        {
+          "id": "p-05-v1",
+          "label": "Natural",
+          "available": true
+        },
+        {
+          "id": "p-05-v2",
+          "label": "Charcoal",
+          "available": false
+        }
+      ]
+    },
+    {
+      "id": "p-06",
+      "name": "Pruning Shears",
+      "brand": "Leafcraft",
+      "category": "Garden",
+      "price": 19.95,
+      "rating": 4.3,
+      "image": "https://picsum.photos/seed/shopfront-p-06/600/600",
+      "description": "Bypass shears with locking safety catch.",
+      "variants": [
+        {
+          "id": "p-06-v1",
+          "label": "Standard",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "p-07",
+      "name": "Seed Starter Kit",
+      "brand": "Leafcraft",
+      "category": "Garden",
+      "price": 14.0,
+      "rating": 4.1,
+      "image": null,
+      "description": "Reusable trays with humidity dome.",
+      "variants": [
+        {
+          "id": "p-07-v1",
+          "label": "12 cell",
+          "available": true
+        },
+        {
+          "id": "p-07-v2",
+          "label": "24 cell",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "p-08",
+      "name": "Cast Iron Skillet 26cm",
+      "brand": "Hearth & Co",
+      "category": "Kitchen",
+      "price": 49.0,
+      "rating": 4.8,
+      "image": "https://picsum.photos/seed/shopfront-p-08/600/600",
+      "description": "Pre-seasoned skillet, oven safe to 260 C.",
+      "variants": [
+        {
+          "id": "p-08-v1",
+          "label": "26cm",
+          "available": true
+        },
+        {
+          "id": "p-08-v2",
+          "label": "30cm",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "p-09",
+      "name": "Chef Knife 20cm",
+      "brand": "Hearth & Co",
+      "category": "Kitchen",
+      "price": 79.0,
+      "rating": 4.6,
+      "image": "https://picsum.photos/seed/shopfront-p-09/600/600",
+      "description": "German steel blade, full tang.",
+      "variants": [
+        {
+          "id": "p-09-v1",
+          "label": "Steel handle",
+          "available": true
+        },
+        {
+          "id": "p-09-v2",
+          "label": "Wood handle",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "p-10",
+      "name": "Pour-over Coffee Set",
+      "brand": "Brewline",
+      "category": "Kitchen",
+      "price": 34.0,
+      "rating": 4.4,
+      "image": "https://picsum.photos/seed/shopfront-p-10/600/600",
+      "description": "Ceramic dripper, glass carafe and filters.",
+      "variants": [
+        {
+          "id": "p-10-v1",
+          "label": "White",
+          "available": false
+        },
+        {
+          "id": "p-10-v2",
+          "label": "Black",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "p-11",
+      "name": "LED Desk Lamp",
+      "brand": "Lumio",
+      "category": "Lighting",
+      "price": 45.0,
+      "rating": 4.5,
+      "image": "https://picsum.photos/seed/shopfront-p-11/600/600",
+      "description": "Dimmable lamp with USB-C charging port.",
+      "variants": [
+        {
+          "id": "p-11-v1",
+          "label": "White",
+          "available": true
+        },
+        {
+          "id": "p-11-v2",
+          "label": "Black",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "p-12",
+      "name": "Solar Path Lights 6-pack",
+      "brand": "Lumio",
+      "category": "Lighting",
+      "price": 29.0,
+      "rating": 4.0,
+      "image": "https://picsum.photos/seed/shopfront-p-12/600/600",
+      "description": "Auto on at dusk, 8 hours runtime.",
+      "variants": [
+        {
+          "id": "p-12-v1",
+          "label": "Warm white",
+          "available": true
+        },
+        {
+          "id": "p-12-v2",
+          "label": "Cool white",
+          "available": true
+        }
+      ]
+    }
+  ]
+}
