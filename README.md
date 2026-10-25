@@ -26,11 +26,11 @@ npx expo run:ios    # or run:android (runs prebuild)
 
 ## CodePush
 
-`app.config.js` wires `@bitrise/code-push-sdk` to the Bitrise CodePush server for
-naveen-bitrise's Workspace. Deployment keys come from `IOS_CODEPUSH_DEPLOYMENT_KEY` and
-`ANDROID_CODEPUSH_DEPLOYMENT_KEY` (`.env` locally, Bitrise Secrets in CI).
+`app.json` configures the `@bitrise/code-push-sdk` Expo plugin with the **Staging** deployment keys
+and the Bitrise CodePush server for naveen-bitrise's Workspace. Deployment keys are not secrets.
 
-The app checks for an update on start and installs it on the next restart.
+The app syncs silently on start and every time it returns to the foreground; a downloaded update is
+applied the next time the app resumes.
 
 ## Bitrise workflows
 
@@ -39,6 +39,6 @@ The app checks for an update on start and installs it on the next restart.
 | `pr` | PR to `main` | `npm run ci` |
 | `ios_simulator` | manual | Release-config simulator build |
 | `android_emulator` | manual | Release APK for emulators |
-| `codepush_staging` | push to `main` | Bundles JS for iOS and Android and uploads to the Staging deployment; keeps source maps as artifacts |
+| `codepush_publish` | push to `main` | Publishes iOS and Android updates to `$CODEPUSH_DEPLOYMENT` (Staging) with the Bitrise CodePush Publish Step |
 
 Promotion from Staging to Production (with a rollout percentage) is done in Release Management.

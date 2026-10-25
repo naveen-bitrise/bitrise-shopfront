@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { AppState } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -16,7 +17,22 @@ import { colors } from './src/lib/theme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function App() {
+// Silent CodePush sync on start and every time the app returns to the foreground
+// (Bitrise docs: "Silent sync every time the app resumes"). Testers pick up a new
+// update by backgrounding and reopening the app.
+function useCodePushSync() {
+  useEffect(() => {
+    const syncOptions = { installMode: codePush.InstallMode.ON_NEXT_RESUME };
+    codePush.sync(syncOptions);
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') codePush.sync(syncOptions);
+    });
+    return () => subscription.remove();
+  }, []);
+}
+
+export default function App() {
+  useCodePushSync();
   return (
     <SafeAreaProvider>
       <CatalogProvider>
@@ -42,10 +58,3 @@ function App() {
     </SafeAreaProvider>
   );
 }
-
-// Check for a CodePush update on every app start and install it on next restart,
-// so a rollout reaches testers predictably.
-export default codePush({
-  checkFrequency: codePush.CheckFrequency.ON_APP_START,
-  installMode: codePush.InstallMode.ON_NEXT_RESTART,
-})(App);

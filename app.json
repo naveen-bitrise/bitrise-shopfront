@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "Shopfront",
+    "slug": "shopfront",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "io.bitrise.naveen.shopfront"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "io.bitrise.naveen.shopfront"
+    },
+    "plugins": [
+      [
+        "@bitrise/code-push-sdk/expo",
+        {
+          "ios": {
+            "CodePushDeploymentKey": "zMhczhJZDkYWmVkPidVe0fMcVuDnYmQyOTk5ODQtMmY3YS00ODM0LWEwYjEtOWU5NjY3MzhhN2Ew",
+            "CodePushServerURL": "https://c8e286a505ee7c81.codepush.bitrise.io"
+          },
+          "android": {
+            "CodePushDeploymentKey": "XqSH162BA07o5Fu9TnFcVJbUmWNaMWU1ZGFmODMtMmQxZi00MjdlLThkODYtYTYwZjY5NjM5NzAy",
+            "CodePushServerURL": "https://c8e286a505ee7c81.codepush.bitrise.io"
+          }
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.5"
+          }
+        }
+      ]
+    ]
+  }
+}

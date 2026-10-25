@@ -4,21 +4,24 @@ project_type: react-native
 
 # Shopfront CI for the self-healing release eval.
 #   pr                 -> typecheck + unit tests on every PR to main (LLM risk review step added later)
-#   ios_simulator      -> release-config simulator build pointing at the Staging CodePush deployment
+#   ios_simulator      -> release-config simulator build that fetches updates from the Staging deployment
 #   android_emulator   -> release APK for emulators, same deployment
-#   codepush_staging   -> on push to main: bundle JS and upload a CodePush update to Staging (iOS + Android)
+#   codepush_publish   -> on push to main: publish a CodePush update (iOS + Android) to $CODEPUSH_DEPLOYMENT
+#                         using the Bitrise CodePush Publish Step
 #
 # Secrets (Bitrise > App settings > Secrets):
-#   BITRISE_API_TOKEN, IOS_CODEPUSH_DEPLOYMENT_KEY, ANDROID_CODEPUSH_DEPLOYMENT_KEY
-# Env vars below (fill after creating connected apps + deployments):
-#   IOS_CONNECTED_APP_ID, IOS_STAGING_DEPLOYMENT_ID, ANDROID_CONNECTED_APP_ID, ANDROID_STAGING_DEPLOYMENT_ID
+#   BITRISE_API_TOKEN (used by codepush_publish)
+# The app's CodePush deployment keys (Staging) live in app.json; they are not secrets.
 
 app:
   envs:
-  - IOS_CONNECTED_APP_ID: REPLACE_ME
-  - IOS_STAGING_DEPLOYMENT_ID: REPLACE_ME
-  - ANDROID_CONNECTED_APP_ID: REPLACE_ME
-  - ANDROID_STAGING_DEPLOYMENT_ID: REPLACE_ME
+  # Release Management app IDs (iOS and Android)
+  - IOS_CONNECTED_APP_ID: bd299984-2f7a-4834-a0b1-9e966738a7a0
+  - ANDROID_CONNECTED_APP_ID: 1e5daf83-2d1f-427e-8d86-a60f69639702
+  # Deployment that new updates are published to (same name exists on both apps)
+  - CODEPUSH_DEPLOYMENT: Staging
+  # Native binary versions that receive the update; keep in sync with app.json `expo.version`
+  - APP_TARGET_VERSIONS: 1.0.0
 
 meta:
   bitrise.io:
@@ -105,55 +108,33 @@ workflows:
         - variant: release
     - deploy-to-bitrise-io@2: {}
 
-  codepush_staging:
+  codepush_publish:
     meta:
       bitrise.io:
         stack: ubuntu-noble-24.04-bitrise-2025-android
         machine_type_id: g2.linux.medium
     steps:
     - bundle::install: {}
-    - script@1:
-        title: Read binary version and fetch Release Management recipes
+    - codepush-publish@1:
+        title: Publish iOS update
         inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -euo pipefail
-            APP_VERSION=$(npx expo config --json 2>/dev/null | jq -r '.version')
-            echo "Binary version: $APP_VERSION"
-            envman add --key APP_VERSION --value "$APP_VERSION"
-            git clone --depth 1 https://github.com/bitrise-io/release-management-recipes
-    - script@1:
-        title: Bundle and upload CodePush updates to Staging
+        - platform: ios
+        - app_id: $IOS_CONNECTED_APP_ID
+        - deployment: $CODEPUSH_DEPLOYMENT
+        - app_version: $APP_TARGET_VERSIONS
+        - api_token: $BITRISE_API_TOKEN
+        - description: "$BITRISE_GIT_MESSAGE ($BITRISE_GIT_COMMIT)"
+        - skip_dependency_install: "true"
+    - codepush-publish@1:
+        title: Publish Android update
         inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -euo pipefail
-
-            upload() {
-              local platform=$1 bundle=$2 connected_app=$3 deployment=$4
-              rm -rf build update.zip
-              npx expo export:embed --entry-file index.js --platform "$platform" --dev false \
-                --reset-cache --bundle-output "./build/$bundle" --assets-dest ./build \
-                --sourcemap-output "./build/$bundle.map"
-              # keep the source map as a build artifact (uploaded to Sentry later)
-              cp "./build/$bundle.map" "$BITRISE_DEPLOY_DIR/$platform-$bundle.map"
-              rm "./build/$bundle.map"
-              zip -qr update.zip ./build
-              local response
-              response=$(cd release-management-recipes && PACKAGE_PATH=../update.zip \
-                AUTHORIZATION_TOKEN=$BITRISE_API_TOKEN CONNECTED_APP_ID=$connected_app \
-                DEPLOYMENT_ID=$deployment APP_VERSION=$APP_VERSION \
-                /bin/bash ./api/upload_code_push_package.sh 2>&1)
-              local status
-              status=$(echo "$response" | tail -n1 | jq -r '.status' || echo null)
-              if [ "$status" != "processed_valid" ]; then
-                echo "$response"; echo "CodePush upload failed for $platform (status: $status)"; exit 1
-              fi
-              echo "CodePush update uploaded for $platform"
-            }
-
-            upload ios main.jsbundle "$IOS_CONNECTED_APP_ID" "$IOS_STAGING_DEPLOYMENT_ID"
-            upload android index.android.bundle "$ANDROID_CONNECTED_APP_ID" "$ANDROID_STAGING_DEPLOYMENT_ID"
+        - platform: android
+        - app_id: $ANDROID_CONNECTED_APP_ID
+        - deployment: $CODEPUSH_DEPLOYMENT
+        - app_version: $APP_TARGET_VERSIONS
+        - api_token: $BITRISE_API_TOKEN
+        - description: "$BITRISE_GIT_MESSAGE ($BITRISE_GIT_COMMIT)"
+        - skip_dependency_install: "true"
     - deploy-to-bitrise-io@2: {}
     triggers:
       push:
