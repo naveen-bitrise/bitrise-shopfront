@@ -27,7 +27,7 @@ export default () => ({
     },
     plugins: [
       [
-        '@code-push-next/react-native-code-push/expo',
+        '@bitrise/code-push-sdk/expo',
         {
           ios: { CodePushDeploymentKey: IOS_CODEPUSH_DEPLOYMENT_KEY || 'MISSING_IOS_KEY', CodePushServerURL: CODEPUSH_SERVER_URL },
           android: { CodePushDeploymentKey: ANDROID_CODEPUSH_DEPLOYMENT_KEY || 'MISSING_ANDROID_KEY', CodePushServerURL: CODEPUSH_SERVER_URL },

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
-import codePush from '@code-push-next/react-native-code-push';
+import codePush from '@bitrise/code-push-sdk';
 import Constants from 'expo-constants';
 import { colors } from '../lib/theme';
 

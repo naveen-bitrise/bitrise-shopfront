@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import codePush from '@code-push-next/react-native-code-push';
+import codePush from '@bitrise/code-push-sdk';
 import type { RootStackParamList } from './src/navigation';
 import { CartProvider } from './src/state/cart';
 import { CatalogProvider } from './src/state/catalog';

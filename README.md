@@ -26,7 +26,7 @@ npx expo run:ios    # or run:android (runs prebuild)
 
 ## CodePush
 
-`app.config.js` wires `@code-push-next/react-native-code-push` to the Bitrise CodePush server for
+`app.config.js` wires `@bitrise/code-push-sdk` to the Bitrise CodePush server for
 naveen-bitrise's Workspace. Deployment keys come from `IOS_CODEPUSH_DEPLOYMENT_KEY` and
 `ANDROID_CODEPUSH_DEPLOYMENT_KEY` (`.env` locally, Bitrise Secrets in CI).
 
