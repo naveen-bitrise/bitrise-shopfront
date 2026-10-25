@@ -6,7 +6,7 @@ project_type: react-native
 #   pr                 -> typecheck + unit tests on every PR to main (LLM risk review step added later)
 #   ios_simulator      -> release-config simulator build that fetches updates from the Staging deployment
 #   android_emulator   -> release APK for emulators, same deployment
-#   codepush_publish   -> on push to main: publish a CodePush update (iOS + Android) to $CODEPUSH_DEPLOYMENT
+#   codepush_publish   -> PR labelled `release-update` (or manual): publish a CodePush update (iOS + Android) to $CODEPUSH_DEPLOYMENT
 #                         using the Bitrise CodePush Publish Step
 #
 # Secrets (Bitrise > App settings > Secrets):
@@ -136,6 +136,9 @@ workflows:
         - description: "$BITRISE_GIT_MESSAGE ($BITRISE_GIT_COMMIT)"
         - skip_dependency_install: "true"
     - deploy-to-bitrise-io@2: {}
+    # Runs when a PR to main gets the `release-update` label (publishes the PR's code),
+    # or manually. Add the label only after CI + the LLM risk gate pass.
     triggers:
-      push:
-      - branch: main
+      pull_request:
+      - target_branch: main
+        label: release-update
