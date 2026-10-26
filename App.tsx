@@ -1,10 +1,8 @@
-import React, { useEffect } from 'react';
-import { AppState } from 'react-native';
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import codePush from '@bitrise/code-push-sdk';
 import type { RootStackParamList } from './src/navigation';
 import { CartProvider } from './src/state/cart';
 import { CatalogProvider } from './src/state/catalog';
@@ -13,26 +11,20 @@ import { ProductDetailScreen } from './src/screens/ProductDetailScreen';
 import { CartScreen } from './src/screens/CartScreen';
 import { CheckoutScreen } from './src/screens/CheckoutScreen';
 import { CartButton } from './src/components/CartButton';
+import { UpdateBanner } from './src/components/UpdateBanner';
+import { UpdateDrawer } from './src/components/UpdateDrawer';
+import { useCodePushUpdates } from './src/lib/useCodePushUpdates';
 import { colors } from './src/lib/theme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Silent CodePush sync on start and every time the app returns to the foreground
-// (Bitrise docs: "Silent sync every time the app resumes"). Testers pick up a new
-// update by backgrounding and reopening the app.
-function useCodePushSync() {
-  useEffect(() => {
-    const syncOptions = { installMode: codePush.InstallMode.ON_NEXT_RESUME };
-    codePush.sync(syncOptions);
-    const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') codePush.sync(syncOptions);
-    });
-    return () => subscription.remove();
-  }, []);
+function Updates() {
+  // Mandatory updates install and restart silently; optional ones are offered in the drawer.
+  const { offer, progress, accept, later } = useCodePushUpdates();
+  return <UpdateDrawer offer={offer} progress={progress} onAccept={accept} onLater={later} />;
 }
 
 export default function App() {
-  useCodePushSync();
   return (
     <SafeAreaProvider>
       <CatalogProvider>
@@ -52,6 +44,8 @@ export default function App() {
               <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: 'Checkout', headerRight: undefined }} />
             </Stack.Navigator>
           </NavigationContainer>
+          <Updates />
+          <UpdateBanner />
           <StatusBar style="light" />
         </CartProvider>
       </CatalogProvider>

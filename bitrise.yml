@@ -6,11 +6,12 @@ project_type: react-native
 #   pr                 -> typecheck + unit tests on every PR to main (LLM risk review step added later)
 #   ios_simulator      -> release-config simulator build that fetches updates from the Staging deployment
 #   android_emulator   -> release APK for emulators, same deployment
-#   codepush_publish   -> PR labelled `release-update` (or manual): publish a CodePush update (iOS + Android) to $CODEPUSH_DEPLOYMENT
-#                         using the Bitrise CodePush Publish Step
+#   codepush_publish     -> PR labelled `release-update`: optional CodePush update (app offers it in a drawer)
+#   codepush_publish_fix -> PR labelled `release-fix`: mandatory CodePush update (installs + restarts, no prompt)
+#                           Both use the Bitrise CodePush Publish Step and publish to $CODEPUSH_DEPLOYMENT
 #
 # Secrets (Bitrise > App settings > Secrets):
-#   BITRISE_API_TOKEN (used by codepush_publish)
+#   BITRISE_API_TOKEN (used by the codepush_publish* workflows)
 # The app's CodePush deployment keys (Staging) live in app.json; they are not secrets.
 
 app:
@@ -41,6 +42,34 @@ step_bundles:
             set -euo pipefail
             npm ci
     - save-npm-cache@1: {}
+  publish:
+    # Publishes the iOS and Android CodePush updates to $CODEPUSH_DEPLOYMENT.
+    # $CODEPUSH_MANDATORY is set by the calling workflow.
+    steps:
+    - bundle::install: {}
+    - codepush-publish@1:
+        title: Publish iOS update
+        inputs:
+        - platform: ios
+        - app_id: $IOS_CONNECTED_APP_ID
+        - deployment: $CODEPUSH_DEPLOYMENT
+        - app_version: $APP_TARGET_VERSIONS
+        - api_token: $BITRISE_API_TOKEN
+        - description: "$BITRISE_GIT_MESSAGE"
+        - mandatory: $CODEPUSH_MANDATORY
+        - skip_dependency_install: "true"
+    - codepush-publish@1:
+        title: Publish Android update
+        inputs:
+        - platform: android
+        - app_id: $ANDROID_CONNECTED_APP_ID
+        - deployment: $CODEPUSH_DEPLOYMENT
+        - app_version: $APP_TARGET_VERSIONS
+        - api_token: $BITRISE_API_TOKEN
+        - description: "$BITRISE_GIT_MESSAGE"
+        - mandatory: $CODEPUSH_MANDATORY
+        - skip_dependency_install: "true"
+    - deploy-to-bitrise-io@2: {}
 
 workflows:
   pr:
@@ -109,36 +138,33 @@ workflows:
     - deploy-to-bitrise-io@2: {}
 
   codepush_publish:
+    # Optional update (features): the app offers it in a drawer ("Update now" / "Later").
+    # Runs when a PR to main gets the `release-update` label (publishes the PR's code), or manually.
     meta:
       bitrise.io:
         stack: ubuntu-noble-24.04-bitrise-2025-android
         machine_type_id: g2.linux.medium
+    envs:
+    - CODEPUSH_MANDATORY: "false"
     steps:
-    - bundle::install: {}
-    - codepush-publish@1:
-        title: Publish iOS update
-        inputs:
-        - platform: ios
-        - app_id: $IOS_CONNECTED_APP_ID
-        - deployment: $CODEPUSH_DEPLOYMENT
-        - app_version: $APP_TARGET_VERSIONS
-        - api_token: $BITRISE_API_TOKEN
-        - description: "$BITRISE_GIT_MESSAGE ($BITRISE_GIT_COMMIT)"
-        - skip_dependency_install: "true"
-    - codepush-publish@1:
-        title: Publish Android update
-        inputs:
-        - platform: android
-        - app_id: $ANDROID_CONNECTED_APP_ID
-        - deployment: $CODEPUSH_DEPLOYMENT
-        - app_version: $APP_TARGET_VERSIONS
-        - api_token: $BITRISE_API_TOKEN
-        - description: "$BITRISE_GIT_MESSAGE ($BITRISE_GIT_COMMIT)"
-        - skip_dependency_install: "true"
-    - deploy-to-bitrise-io@2: {}
-    # Runs when a PR to main gets the `release-update` label (publishes the PR's code),
-    # or manually. Add the label only after CI + the LLM risk gate pass.
+    - bundle::publish: {}
     triggers:
       pull_request:
       - target_branch: main
         label: release-update
+
+  codepush_publish_fix:
+    # Mandatory update (self-healing fixes): the app installs it and restarts without asking.
+    # Runs when a PR to main gets the `release-fix` label, or manually.
+    meta:
+      bitrise.io:
+        stack: ubuntu-noble-24.04-bitrise-2025-android
+        machine_type_id: g2.linux.medium
+    envs:
+    - CODEPUSH_MANDATORY: "true"
+    steps:
+    - bundle::publish: {}
+    triggers:
+      pull_request:
+      - target_branch: main
+        label: release-fix

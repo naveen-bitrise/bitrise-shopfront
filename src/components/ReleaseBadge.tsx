@@ -10,7 +10,7 @@ export function ReleaseBadge() {
   useEffect(() => {
     codePush
       .getUpdateMetadata()
-      .then((m) => setLabel(m?.label ?? null))
+      .then((m) => setLabel(m ? (m.versionLabel ?? m.label) : null))
       .catch(() => setLabel(null));
   }, []);
   const version = Constants.expoConfig?.version ?? '?';
