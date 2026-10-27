@@ -59,7 +59,12 @@ export function useCodePushUpdates() {
       if (dismissed.current.has(label)) return;
       remoteRef.current = remote;
       setState({
-        offer: { label, description: remote.description ?? '', sizeBytes: remote.packageSize ?? 0 },
+        offer: {
+          label,
+          // First line only: the description is the commit / PR message.
+          description: (remote.description ?? '').split('\n')[0].trim(),
+          sizeBytes: remote.packageSize ?? 0,
+        },
         progress: null,
       });
     } catch (err) {

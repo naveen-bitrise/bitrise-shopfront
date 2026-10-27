@@ -18,7 +18,9 @@ export function UpdateBanner() {
       .getUpdateMetadata()
       .then((pkg) => {
         if (pkg?.isFirstRun) {
-          setInfo({ label: pkg.versionLabel ?? pkg.label, description: pkg.description ?? '' });
+          // First line only: the description is the commit / PR message.
+          const description = (pkg.description ?? '').split('\n')[0].trim();
+          setInfo({ label: pkg.versionLabel ?? pkg.label, description });
         }
       })
       .catch(() => {});
