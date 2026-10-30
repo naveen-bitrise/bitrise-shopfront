@@ -37,7 +37,7 @@ export function HomeScreen({ navigation }: Props) {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Search products"
+            placeholder="Search tools, garden, kitchen…"
             placeholderTextColor={colors.muted}
             style={styles.search}
             testID="search"
