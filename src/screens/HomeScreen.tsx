@@ -51,7 +51,7 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </View>
       }
-      ListEmptyComponent={loading ? null : <Text style={styles.empty}>No products match your search.</Text>}
+      ListEmptyComponent={loading ? null : <Text style={styles.empty}>No products match your search. Try another keyword.</Text>}
       ListFooterComponent={<ReleaseBadge />}
       renderItem={({ item }) => (
         <ProductCard product={item} onPress={() => navigation.navigate('ProductDetail', { productId: item.id })} />
