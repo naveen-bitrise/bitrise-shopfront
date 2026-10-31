@@ -22,11 +22,11 @@ app:
   # Deployment that new updates are published to (same name exists on both apps)
   - CODEPUSH_DEPLOYMENT: Staging
   # Native binary versions that receive the update; keep in sync with app.json `expo.version`
-  - APP_TARGET_VERSIONS: 1.0.0
+  - APP_TARGET_VERSIONS: 1.1.0
 
 meta:
   bitrise.io:
-    stack: osx-xcode-16.4.x
+    stack: osx-xcode-27.2.x
     machine_type_id: g2.mac.medium
 
 step_bundles:
