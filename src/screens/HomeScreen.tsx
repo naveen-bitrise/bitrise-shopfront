@@ -37,7 +37,7 @@ export function HomeScreen({ navigation }: Props) {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Search products"
+            placeholder="Search tools, garden, kitchen…"
             placeholderTextColor={colors.muted}
             style={styles.search}
             testID="search"
@@ -51,7 +51,7 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </View>
       }
-      ListEmptyComponent={loading ? null : <Text style={styles.empty}>No products match your search.</Text>}
+      ListEmptyComponent={loading ? undefined : <Text style={styles.empty}>No products match your search. Try another keyword.</Text>}
       ListFooterComponent={<ReleaseBadge />}
       renderItem={({ item }) => (
         <ProductCard product={item} onPress={() => navigation.navigate('ProductDetail', { productId: item.id })} />
